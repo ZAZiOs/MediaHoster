@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html data-bs-theme="dark">
+<head>
+    <title>Уверен?</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+</head>
+<body>
+<div class="container">
+<form action="/" method="post">
+<div class="row g-3 mb-5 flex-column align-items-center">
+    <div class="col-md-12">
+    <h1 class="my-heading mt-5 text-center text-danger">СТОП!</h1>
+    <h6 class="my-heading text-center">Ты действительно хочешь удалить это фото? Ну мало ли случайно тыкнул</h6>
+    </div>
+    <a href="/main" class="butwid btn btn-success">"Нет, спасибо за предупреждение"</a>
+    <a href="/deleteconfirm?file={{file}}" class="butwid btn btn-outline-danger">Да, я хочу удалить это фото.</a>
+</div>
+</form>
+</div>
+</body>
+<script>
+function PassShow() {
+let passNode = document.getElementById("pass");
+  if (passNode.type === "password") {
+    passNode.type = "text";
+  } else {
+    passNode.type = "password";
+  }
+}  
+</script>
+<style>
+.butwid{
+  width: 50%;
+}
+@media screen and (max-width: 1000px) {
+.butwid{
+  width: 100%;
+}
+}
+</style>
+</html>
+
