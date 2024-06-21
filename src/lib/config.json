@@ -1,0 +1,6 @@
+{
+    "filenamePrefix": "zaz-nsfw-",
+    "private": false,
+    "registration": "secure",
+    "token_expire": "76h"
+}
