@@ -17,6 +17,7 @@ import {
     InputGroupText,
     Icon
 } from '@sveltestrap/sveltestrap';
+import axios from 'axios';
 
 let openAuth = config.private && !isLogged;
 let openRegs = false
@@ -31,8 +32,17 @@ const toggleAuth = () => { openRegs = false; openAuth = true; }
 let passreg = ''
 let passconf = ''
 
+const handleSubmit = async (e) => {
+    try {
+        const formData = new FormData(e.target)
+        console.log(formData)
+        const res = await axios.post(`/api/upload`, formData);
+    } catch (err) {
+        console.log(err);
+    }
+};
 
-
+let files = []
 
 </script>
 
@@ -100,9 +110,14 @@ let passconf = ''
 
 <!-- Загрузка файлов -->
 
-<Modal isOpen={openConf} keyboard={false} backdrop='static'>
-    <ModalHeader>{s.register.title}</ModalHeader>
-    <ModalBody> 
+<Modal isOpen={openUpload} keyboard={false} backdrop='static'>
+    <ModalHeader>{s.upload.title}</ModalHeader>
+    <ModalBody>
+        <form on:submit|preventDefault={handleSubmit}>
+        <input class="form-control" type="file" id="files" name="files" multiple/>
+        <Button>Upload</Button>
+        {JSON.stringify(files)}
+        </form>
     </ModalBody>
 </Modal>
 
@@ -154,7 +169,7 @@ let passconf = ''
     <div class="container d-flex justify-content-between">
         <div class="row g-3 w-100">
         <div class="col-md-4 text-start">
-            {#if user.canAddStuff}<button class="btn btn-outline-success px-2 py-1">{s.button.toUpload}</button>{/if}
+            {#if user.canAddStuff}<button class="btn btn-outline-success px-2 py-1" on:click={() => openUpload = true}>{s.button.toUpload}</button>{/if}
         </div>
         <div class="col-md-4 text-center">
             {#if user.isAdmin}<button class="btn btn-outline-info px-2 py-1">{s.button.adminPanel}</button>{/if}

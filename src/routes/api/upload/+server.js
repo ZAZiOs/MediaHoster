@@ -1,14 +1,19 @@
 import { error, redirect } from "@sveltejs/kit";
+import { decodeTkn } from "$lib/check-token.js";
+
 
 export async function POST({ request }) {
     try {
-    const formData = Object.fromEntries(await request.formData())
-    let {file, delimeter} = formData
-    if (!file.name || file.name === 'undefined') {
-        error(400, 'You must provide a file to upload');
-    }
+    const data = await request.formData();
 
-    let buffer = Buffer.from(await file.arrayBuffer())
+
+    /*if (!file.name || file.name === 'undefined') {
+        error(400, 'You must provide a file to upload');
+    }*/
+
+
+
+    //let buffer = Buffer.from(await file.arrayBuffer())
 
     
     return new Response({
