@@ -1,7 +1,7 @@
 <script>
 export let data;
 
-let {user, isLogged} = data
+let {posts, user, isLogged, token} = data
 
 import config from '$lib/config.json'
 import s from '$lib/strings.json'
@@ -23,6 +23,7 @@ let openAuth = config.private && !isLogged;
 let openRegs = false
 let openConf = false
 let openUpload = false
+let openDelete = false
 let openAdmin = false
 
 const toggle = () => { openAuth = !openAuth; openRegs = !openRegs; };
@@ -35,14 +36,50 @@ let passconf = ''
 const handleSubmit = async (e) => {
     try {
         const formData = new FormData(e.target)
-        console.log(formData)
-        const res = await axios.post(`/api/upload`, formData);
+        for(let file of files) {
+        formData.append("file", file);
+        }
+        formData.append('token', token)
+        const res = await axios.post(`/api/upload`, formData)
+        .then(res => {response_from_upload = res.data; console.log(res)})
+        .catch(err => response_from_upload = err.message);
+        await sleep(500)
+        loadPost()
     } catch (err) {
         console.log(err);
     }
 };
 
-let files = []
+const deletePost = async (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('token', token)
+    await axios.post(`/api/delete`, formData)
+    const index = posts.findIndex(obj => obj.file === file);
+    posts.splice(index, 1)
+    posts = posts
+}
+
+const loadPost = async(page) => {
+    if (!page) {page = 0}
+    await axios.get('/api/load/', {
+        page,
+        token
+    }).then(res => 
+        posts = res.data
+    ).catch(err => console.log(err))
+}
+
+let response_from_upload = {}
+
+let files
+
+let remove_mode_enabled = false
+let removing = ''
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 </script>
 
@@ -110,15 +147,30 @@ let files = []
 
 <!-- Загрузка файлов -->
 
-<Modal isOpen={openUpload} keyboard={false} backdrop='static'>
-    <ModalHeader>{s.upload.title}</ModalHeader>
+<Modal isOpen={openUpload} toggle={() => openUpload = !openUpload}>
+    <ModalHeader toggle={() => openUpload = !openUpload}>{s.upload.title}</ModalHeader>
     <ModalBody>
         <form on:submit|preventDefault={handleSubmit}>
-        <input class="form-control" type="file" id="files" name="files" multiple/>
-        <Button>Upload</Button>
-        {JSON.stringify(files)}
+        <input class="form-control" type="file" id="files" name="files" multiple bind:files/>
+        <div>
+        {#if response_from_upload != {}}
+            {JSON.stringify(response_from_upload)}
+        {/if}
+        </div>
+        <Button type="submit">Upload</Button>
         </form>
     </ModalBody>
+</Modal>
+
+<Modal isOpen={openDelete} toggle={() => openDelete = !openDelete}>
+    <ModalHeader toggle={() => openDelete = !openDelete}>{s.delete.title}</ModalHeader>
+    <ModalBody>
+        <h1>Are you sure about that?</h1>
+    </ModalBody>
+    <ModalFooter>
+        <form>
+            <Button type="submit" color="danger" outline on:click={() => {deletePost(removing); openDelete = false}}>Yes</Button></form>
+    </ModalFooter>
 </Modal>
 
 {#if config.private && !isLogged}
@@ -168,13 +220,16 @@ let files = []
 <div class="py-3 border-bottom bg-dark-subtle">
     <div class="container d-flex justify-content-between">
         <div class="row g-3 w-100">
-        <div class="col-md-4 text-start">
+        <div class="col-md-3 text-start">
             {#if user.canAddStuff}<button class="btn btn-outline-success px-2 py-1" on:click={() => openUpload = true}>{s.button.toUpload}</button>{/if}
         </div>
-        <div class="col-md-4 text-center">
+        <div class="col-md-3 text-center">
+            {#if user.canAddStuff}<button class="btn btn-outline-danger px-2 py-1" on:click={() => remove_mode_enabled = !remove_mode_enabled}>{s.button.removeStuff}</button>{/if}
+        </div>
+        <div class="col-md-3 text-center">
             {#if user.isAdmin}<button class="btn btn-outline-info px-2 py-1">{s.button.adminPanel}</button>{/if}
         </div>
-        <div class="col-md-4 text-end">
+        <div class="col-md-3 text-end">
             {#if isLogged}
             <form method="POST" action="/?/logout"><button class="btn btn-outline-danger px-2 py-1">{s.button.logout}</button></form>
             {:else}
@@ -197,6 +252,26 @@ let files = []
     </div>
     </div>
     <hr>
+
+    <div class="row g-3">
+        {#each posts as post}
+        <div class="col-md-4">
+            {#if remove_mode_enabled}
+            <button class="btn btn-outline-danger position-absolute" style="z-index: 1;" on:click={() => {removing = post.file; openDelete = true}}>X</button>
+            {/if}
+            <a href={post.file}>
+                {#if post.file.includes('.gif')}
+                <img class="card card-img border-info" src={post.thumbnail} />
+                {:else if post.filetype == 'image'}
+                <img class="card card-img border-secondary" src={post.thumbnail} />
+                {:else if post.filetype == 'video'}
+                <img class="card card-img border-warning" src={post.thumbnail} />
+                {/if}
+            </a>
+        </div>
+        {/each}
+    </div>
+
 </div>
 
 {/if}

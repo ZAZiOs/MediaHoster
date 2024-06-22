@@ -77,17 +77,61 @@ export const actions = {
 
 
 import { decodeTkn } from '$lib/check-token.js';
+import { PostDB } from '$lib/model/post';
 
-export async function load({cookies, params}) {
-    const decoded = await decodeTkn(cookies.get('token'))
+export async function load({cookies, params, url}) {
+	const decoded = await decodeTkn(cookies.get('token'))
+	if (config.private && !decoded) {
+		return {
+			isLogged: false
+		}
+	}
+	
+	let page = url.searchParams.get('page');
+	if (!page) { page = 0 }
+
+	let posts = await PostDB.find({}, {_id: 0}).limit(20).skip(20 * page).lean()
+	let rendered_posts = ''
+
+	const template = `
+	<div class="col-md-4">
+		<a href=LINKTOACTION>
+			<img class="card card-img border-COLOR" src=THUMB alt="image">
+		</a>
+    </div>
+	`
+
+	for (let post of posts) {
+		let result = template.replace('LINKTOACTION', post.file).replace('THUMB', post.thumbnail)
+
+		switch(posts.filetype) {
+			case 'image':
+				if (post.file.includes('gif')) {
+					result.replace('COLOR', 'info')
+				} else {
+					result.replace('COLOR', 'secondary')
+				}
+				break;
+			case 'video':
+				result.replace('COLOR', 'warning')
+				break;
+		}
+
+		rendered_posts += result
+	}
+
     if (!decoded) {
         return {
+			posts,
             user: {},
-            isLogged: false
+            isLogged: false,
+			token: 'xxx'
         }
     }
     return {
+		posts,
         user: decoded,
-        isLogged: true
+        isLogged: true,
+		token: cookies.get('token')
     }
 }

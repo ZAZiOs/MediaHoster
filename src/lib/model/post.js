@@ -1,8 +1,7 @@
 import mongoose from 'mongoose';
 
 const postSchema = new mongoose.Schema({
-filename: String,
-dest: String,
+file: String,
 filetype: String,
 thumbnail: String
 })

@@ -1,6 +1,10 @@
 {
     "filenamePrefix": "zaz-nsfw-",
     "private": false,
-    "registration": "secure",
-    "token_expire": "76h"
+    "registration": "non",
+    "token_expire": "76h",
+    "media": {
+        "width": 300,
+        "jpeg_quality": 75
+    }
 }
